@@ -1,4 +1,4 @@
-package com.example.jarvis
+package com.example.jarvis.web
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 

@@ -1,9 +1,9 @@
-package com.example.jarvis
+package com.example.jarvis.util
 
+import org.springframework.stereotype.Component
 import java.io.FileInputStream
 import java.io.IOException
 import javazoom.jl.player.Player
-import org.springframework.stereotype.Component
 
 @Component
 class VoiceUtil {

@@ -1,4 +1,7 @@
-package com.example.jarvis
+package com.example.jarvis.web
+import com.example.jarvis.dataclass.SpotifyData
+import com.example.jarvis.dataclass.ToolCalls
+import com.example.jarvis.util.VoiceUtil
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import kotlinx.serialization.json.Json

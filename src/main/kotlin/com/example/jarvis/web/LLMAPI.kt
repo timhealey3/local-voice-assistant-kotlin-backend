@@ -1,4 +1,4 @@
-package com.example.jarvis
+package com.example.jarvis.web
 
 import io.github.ollama4j.OllamaAPI
 import io.github.ollama4j.models.response.OllamaResult
@@ -42,7 +42,13 @@ class LLMAPI {
     }
 
     ### RULES
-    1. Output ONLY the JSON.
+    1. Output ONLY in the JSON structure of 
+    {
+      "toolName": "chatResponse",
+      "chatResponse": {
+        "text": "Your spoken response here"
+      }
+    } .
     2. The "text" field must be plain text optimized for Text-to-Speech (no symbols).
     3. Ensure "toolName" is exactly "chatResponse" so the system can route it.
 

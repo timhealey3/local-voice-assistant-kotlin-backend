@@ -1,4 +1,4 @@
-package com.example.jarvis
+package com.example.jarvis.dataclass
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.json.JsonClassDiscriminator
