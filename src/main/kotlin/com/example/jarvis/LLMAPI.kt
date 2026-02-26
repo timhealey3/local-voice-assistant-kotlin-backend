@@ -6,11 +6,48 @@ import org.springframework.stereotype.Component
 
 @Component
 class LLMAPI {
-    private val routingPrompt = "You are a routing LLM. Only route to a tool call if you are confident you are correct, if you are not confident pick the tool Unsure" +
-            " the tools you can use are 1. playSpotifySong 2. turnOnLight 3. Unsure. Return ONLY the toolName in JSON {toolName: } if it is a Spotify song return add {spotifyData: {songName:}} to your JSON response "
+    private val routingPrompt = """
+    You are a routing engine. Your output must be RAW JSON ONLY. Do not include markdown, backticks, or explanation.
+    
+    ### TOOLS
+    1. playSpotifySong: Use this if the user wants to hear music.
+    2. turnOnLight: Use this for smart home lighting requests.
+    3. unsure: Use this if the request is a general question, chat, or if you aren't 100% certain.
 
-    private val generatingPrompt = "You are a helpful voice assistant like Amazon Alexa, don't answer with any special characters as this will be run though a text to speech program" +
-            " Return ONLY the toolName in JSON {toolName: } as Answer and add {chatResponse: {text:}} to your JSON response with text being the output response. please answer this question: "
+    ### OUTPUT SCHEMA
+    You must return a JSON object with exactly this structure:
+    {
+      "toolName": "unsure" | "spotify" | "light",
+      "unsureData": { "textOutput": "reasoning here" },
+      "spotifyData": { "songName": "name here" }
+    }
+
+    ### RULES
+    - If the users request is unclear or not something the tools can handle, always pick "unsure".
+    - If toolName is "unsure", include "unsureData" and do NOT add "spotifyData".
+    - If toolName is "spotify", include "spotifyData" and do NOT add "unsureData".
+    - Use LOWERCASE for toolNames to match the Kotlin @SerialName configuration.
+""".trimIndent()
+
+    private val generatingPrompt = """
+    You are a helpful voice assistant. Your output must be a single RAW JSON object. 
+    Do not use markdown formatting, backticks, or special characters like *, #, or _.
+    
+    ### JSON STRUCTURE
+    {
+      "toolName": "chatResponse",
+      "chatResponse": {
+        "text": "Your spoken response here"
+      }
+    }
+
+    ### RULES
+    1. Output ONLY the JSON.
+    2. The "text" field must be plain text optimized for Text-to-Speech (no symbols).
+    3. Ensure "toolName" is exactly "chatResponse" so the system can route it.
+
+    Answer this question: 
+""".trimIndent()
 
     fun queryRoutingLLM(prompt: String): OllamaResult? {
         val host = "http://localhost:11434/"
@@ -21,7 +58,6 @@ class LLMAPI {
             (routingPrompt + prompt),
             null
         )
-        println(response)
         return response
     }
 
@@ -34,7 +70,6 @@ class LLMAPI {
             (generatingPrompt + prompt),
             null
         )
-        println(response)
         return response
     }
 }

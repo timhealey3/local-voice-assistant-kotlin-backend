@@ -11,16 +11,20 @@ class VoiceController(
 ) {
     private val folder_path = "../voiceOutput/"
 
-    fun playSpotify(spotifyData: SpotifyData?): String {
+    fun playSpotify(spotifyData: SpotifyData): String {
         println("playing spotify")
-        return "Currently playing ${spotifyData?.songName}"
+        return "Currently playing ${spotifyData.songName}"
     }
 
     fun callLargeModel(prompt: String): String {
         println("call largeModel()")
         val llmResponse = llmAPI.queryLargerLLM(prompt)
-        val toolCall = Json.decodeFromString<ToolCalls>(llmResponse!!.response)
-        return toolCall.chatResponse!!.text
+        val toolCall: ToolCalls = Json.decodeFromString<ToolCalls>(llmResponse!!.response)
+        return if (toolCall is ToolCalls.Chat) {
+            toolCall.chatResponse.text
+        }else{
+            "unkown"
+        }
     }
 
     @GetMapping("/textToVoice")
@@ -28,10 +32,11 @@ class VoiceController(
         // small routing ollama model
         val llmResponse = llmAPI.queryRoutingLLM(prompt)
         val toolCall = Json.decodeFromString<ToolCalls>(llmResponse!!.response)
-        val textOutput = when (toolCall.toolName) {
-            "playSpotifySong" -> playSpotify(toolCall?.spotifyData)
-            "Unsure" -> callLargeModel(prompt)
-            else -> "I'm sorry I did not hear that, can you please repeat yourself?"
+        val textOutput = when (toolCall) {
+            is ToolCalls.Spotify-> playSpotify(toolCall.spotifyData)
+            is ToolCalls.Unsure -> callLargeModel(prompt)
+            is ToolCalls.Chat -> toolCall.chatResponse.text
+            else -> "Can you please repeat that?"
         }
         val outputFile: String = voiceService.postVoice(textOutput)
         voiceUtil.playMp3(folder_path + outputFile)
